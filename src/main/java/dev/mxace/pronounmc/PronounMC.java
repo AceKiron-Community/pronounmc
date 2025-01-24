@@ -6,6 +6,7 @@ import dev.mxace.pronounmc.commands.executors.ReloadpronounmcCommandExecutor;
 import dev.mxace.pronounmc.commands.executors.SetpronounsCommandExecutor;
 import dev.mxace.pronounmc.commands.tabcompleters.PronounsnoteTabCompleter;
 import dev.mxace.pronounmc.commands.tabcompleters.SetpronounsTabCompleter;
+import dev.mxace.pronounmc.listeners.JoinListener;
 import dev.mxace.pronounmc.manager.DatabaseManager;
 import dev.mxace.pronounmc.manager.PronounsManager;
 import dev.mxace.pronounmc.placeholderapi.PronounPlaceholderAPIExpansion;
@@ -60,6 +61,9 @@ public final class PronounMC extends JavaPlugin {
         // Reload managers
         DatabaseManager.reload();
         PronounsManager.reload();
+
+        // Add listeners
+        getServer().getPluginManager().registerEvents(new JoinListener(), this);
     }
 
     private void disable() {

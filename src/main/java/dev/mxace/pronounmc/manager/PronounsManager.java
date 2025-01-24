@@ -9,12 +9,12 @@ import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class PronounsManager {
+    private static final List<String> keys = new ArrayList<>();
+    private static final List<String> values = new ArrayList<>();
+
     public static class Pronouns {
         private static final Map<String, Pronouns> stringPronounsMap = new HashMap<>();
         private static final Map<Player, Pronouns> playerPronounsMap = new HashMap<>();
@@ -84,23 +84,27 @@ public class PronounsManager {
             if (defaultPronouns == null) {
                 Bukkit.getLogger().severe("Default pronouns aren't available!");
             }
-
-            try {
-                for (Player p : Bukkit.getServer().getOnlinePlayers()) {
-                    ResultSet rs = DatabaseManager.getSingleResultSet("SELECT pronouns FROM pronouns_table WHERE player_uuid = '" + p.getUniqueId() + "';");
-                    if (!rs.isClosed()) {
-                        String identifier = rs.getString("pronouns");
-                        playerPronounsMap.put(p, stringPronounsMap.get(identifier));
-                    }
-                }
-            } catch (SQLException ex) {
-                Bukkit.getLogger().severe("SQLException: " + ex.getSQLState() + "; Message: " + ex.getMessage());
-            }
         }
     }
 
     public static void reload() {
+        keys.clear();
+        values.clear();
+
+        keys.add("pronouns");
+
         Pronouns.reload();
+
+        values.add(Pronouns.defaultPronouns.identifier);
+
+        try {
+            for (Player p : Bukkit.getServer().getOnlinePlayers()) {
+                Map<String, String> result = DatabaseManager.getSingleResultSet("SELECT pronouns FROM pronouns_table WHERE player_uuid = '" + p.getUniqueId() + "';", keys, values);
+                Pronouns.playerPronounsMap.put(p, Pronouns.stringPronounsMap.get(result.get("pronouns")));
+            }
+        } catch (SQLException ex) {
+            Bukkit.getLogger().severe("SQLException: " + ex.getSQLState() + "; Message: " + ex.getMessage());
+        }
     }
 
     public static Pronouns getPronouns(String identifier) {
@@ -119,7 +123,8 @@ public class PronounsManager {
     public static void setPronouns(Player p, Pronouns p2) {
         Pronouns.playerPronounsMap.put(p, p2);
         try {
-            DatabaseManager.executeQuery("REPLACE INTO pronouns_table (pronouns) VALUES ('" + p2.identifier + "') WHERE player_uuid = '" + p.getUniqueId() + "';");
+            DatabaseManager.executeQuery("DELETE FROM pronouns_table WHERE player_uuid = '" + p.getUniqueId() + "';");
+            DatabaseManager.executeQuery("INSERT INTO pronouns_table (player_uuid, pronouns) VALUES ('" + p.getUniqueId() + "', '" + p2.identifier + "');");
         } catch (SQLException ex) {
             Bukkit.getLogger().severe("SQLException: " + ex.getSQLState() + "; Message: " + ex.getMessage());
         }
@@ -136,5 +141,13 @@ public class PronounsManager {
 
     public static List<String> getPronounsList() {
         return Pronouns.stringPronounsMap.keySet().stream().toList();
+    }
+
+    public static void handleJoinEvent(Player p, String identifier) {
+        Pronouns.playerPronounsMap.put(p, Pronouns.stringPronounsMap.get(identifier));
+    }
+
+    public static String getDefault() {
+        return Pronouns.defaultPronouns.identifier;
     }
 }

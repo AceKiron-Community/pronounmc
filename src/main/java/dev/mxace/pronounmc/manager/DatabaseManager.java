@@ -4,6 +4,9 @@ import dev.mxace.pronounmc.PronounMC;
 import org.bukkit.Bukkit;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseManager {
     private static Connection connection;
@@ -28,12 +31,18 @@ public class DatabaseManager {
         }
     }
 
-    public static ResultSet getSingleResultSet(String query) throws SQLException {
+    public static Map<String, String> getSingleResultSet(String query, List<String> columns, List<String> defaultValues) throws SQLException {
         try (Statement statement = connection.createStatement()) {
             ResultSet rs = statement.executeQuery(query);
             rs.next();
 
-            return rs;
+            Map<String, String> result = new HashMap<>();
+
+            for (String column : columns) {
+                result.put(column, rs.getString(column));
+            }
+
+            return result;
         }
     }
 }
