@@ -1,4 +1,4 @@
-name: Build and test
+name: Build and upload artifact
 on:
   push:
   pull_request:
@@ -15,3 +15,9 @@ jobs:
         uses: s4u/setup-maven-action@v1.14.0
           
       - run: mvn package
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pmc-base
+          path: target/PronounMC-*.jar

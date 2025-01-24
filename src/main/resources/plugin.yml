@@ -1,34 +1,20 @@
 name: PronounMC
-version: '${project.version}'
+version: '2025.1'
 main: dev.mxace.pronounmc.PronounMC
-description: A Minecraft plugin for sharing pronouns.
-authors:
-  - AceKiron
-api-version: 1.13
-
+api-version: '1.21'
+authors: [ _Mx_Ace ]
+description: Allows for complex manipulation of incoming chat messages.
+softdepend: [ PlaceholderAPI ]
 commands:
-  pronounsinfo:
-    description: Show information about a set of pronouns.
-
-    usage: /pronounsinfo [pronouns] [locale]
-
-    permission: pronounmc.info
-    permission-message: You don't have permission to run this command.
-
-  mypronouns:
-    description: Show information about your own pronouns or change your own pronouns.
-
-    usage: /mypronouns [pronouns] [acceptance]
-
-    permission: pronounmc.my
-    permission-message: You don't have permission to run this command.
-
-permissions:
-  pronounmc.info:
-    description: Permission required for /pronounsinfo command.
-
-  pronounmc.my:
-    description: Permission required for /mypronouns command.
-
-  pronounmc.pronounsinchat:
-    description: Permission required to have a hover effect with your pronouns in chat.
+  setpronouns:
+    description: Modify your preferred pronouns.
+    usage: /setpronouns <pronouns> [player]
+  clearpronouns:
+    description: Removes your preferred pronouns from the database.
+    usage: /clearpronouns [player]
+  pronounsnote:
+    description: Presents a possible note attached to a set of pronouns to the player.
+    usage: /pronounsnote <pronouns>
+  reloadpronounmc:
+    description: Reloads the PronounMC plugin.
+    usage: /reloadpronounmc

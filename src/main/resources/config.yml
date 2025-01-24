@@ -1,7 +1,0 @@
-locales:
-  - en
-
-default_locale: en
-default_acceptance_status: okay
-
-hide_negative_pronouns_acceptance: true

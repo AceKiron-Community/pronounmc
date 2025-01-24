@@ -1,124 +1,82 @@
 package dev.mxace.pronounmc;
 
-import dev.mxace.pronounmc.commands.MyPronounsCommand;
-import dev.mxace.pronounmc.commands.PronounsInfoCommand;
-import dev.mxace.pronounmc.config.AcceptanceStatusesConfig;
-import dev.mxace.pronounmc.config.PronounsConfig;
-import dev.mxace.pronounmc.config.SimpleConfig;
-import dev.mxace.pronounmc.config.TextsConfig;
-import dev.mxace.pronounmc.handlers.ChatHandler;
-import dev.mxace.pronounmc.handlers.JoinHandler;
+import dev.mxace.pronounmc.commands.executors.ClearpronounsCommandExecutor;
+import dev.mxace.pronounmc.commands.executors.PronounsnoteCommandExecutor;
+import dev.mxace.pronounmc.commands.executors.SetpronounsCommandExecutor;
+import dev.mxace.pronounmc.commands.tabcompleters.PronounsnoteTabCompleter;
+import dev.mxace.pronounmc.commands.tabcompleters.SetpronounsTabCompleter;
+import dev.mxace.pronounmc.manager.DatabaseManager;
+import dev.mxace.pronounmc.manager.PronounsManager;
+import dev.mxace.pronounmc.placeholderapi.PronounPlaceholderAPIExpansion;
 
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
+import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.logging.Level;
-
 public final class PronounMC extends JavaPlugin {
-
-    public static PronounMC pluginInstance;
-
-    private PronounMCDatabase database;
-
-    private SimpleConfig config;
-    private PronounsConfig pronounsConfig;
-    private TextsConfig textsConfig;
-    private AcceptanceStatusesConfig acceptanceStatusesConfig;
-
-    private void registerCommand(Class<?> c, String commandName) {
-        PluginCommand pc = getCommand(commandName);
-        if (pc == null) {
-            Bukkit.getLogger().log(Level.SEVERE, "Could not find /" + commandName + " command.");
-            Bukkit.getPluginManager().disablePlugin(this);
-        } else {
-            try {
-                Object commandInstance = c.getDeclaredField("commandInstance").get(null);
-
-                pc.setExecutor((CommandExecutor) commandInstance);
-                pc.setTabCompleter((TabCompleter) commandInstance);
-            } catch (NoSuchFieldException | IllegalAccessException ex) {
-                Bukkit.getLogger().log(Level.SEVERE, ex.getMessage());
-                Bukkit.getPluginManager().disablePlugin(this);
-            }
-        }
+    private static PronounMC instance;
+    public static PronounMC getInstance() {
+        return instance;
     }
+
+    private PronounPlaceholderAPIExpansion pronounPlaceholderAPIExpansion;
 
     @Override
     public void onEnable() {
-        pluginInstance = this;
+        instance = this;
 
-        config = new SimpleConfig();
-        pronounsConfig = new PronounsConfig();
-        textsConfig = new TextsConfig();
-        acceptanceStatusesConfig = new AcceptanceStatusesConfig();
+        enable();
+    }
 
+    private void enable() {
+        // Create ~/plugins/PronounMC folder
         if (!getDataFolder().exists()) {
-            if (!getDataFolder().mkdirs()) {
-                Bukkit.getLogger().warning("Data folder could not be created.");
-            }
+            getDataFolder().mkdirs();
         }
 
-        try {
-            database = new PronounMCDatabase("pronouns.db");
-        } catch (SQLException | IOException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, ex.getMessage());
-            Bukkit.getPluginManager().disablePlugin(this);
+        // Register Placeholder API expansion
+        Plugin placeholderAPI = Bukkit.getPluginManager().getPlugin("PlaceholderAPI");
+        if (placeholderAPI != null) {
+            Bukkit.getLogger().info("PlaceholderAPI found!");
+            pronounPlaceholderAPIExpansion = new PronounPlaceholderAPIExpansion();
+            pronounPlaceholderAPIExpansion.register();
+        } else {
+            Bukkit.getLogger().warning("PlaceholderAPI not found!");
         }
 
-        registerCommand(PronounsInfoCommand.class, "pronounsinfo");
-        registerCommand(MyPronounsCommand.class, "mypronouns");
+        // Register commands
+        getCommand("clearpronouns").setExecutor(new ClearpronounsCommandExecutor());
 
-        try {
-            JoinHandler joinHandler = new JoinHandler(pronounsConfig.getAllIdentifiers());
-            getServer().getPluginManager().registerEvents(joinHandler, this);
+        getCommand("pronounsnote").setExecutor(new PronounsnoteCommandExecutor());
+        getCommand("pronounsnote").setTabCompleter(new PronounsnoteTabCompleter());
 
-            for (Player p : getServer().getOnlinePlayers()) {
-                try {
-                    joinHandler.registerDefaultPronounsAcceptanceStatuses(p.getUniqueId());
-                } catch (SQLException ex) {
-                    Bukkit.getLogger().log(Level.SEVERE, ex.getMessage());
-                }
-            }
-        } catch (IOException ex) {
-            Bukkit.getLogger().log(Level.SEVERE, ex.getMessage());
+        getCommand("setpronouns").setExecutor(new SetpronounsCommandExecutor());
+        getCommand("setpronouns").setTabCompleter(new SetpronounsTabCompleter());
+
+
+        // Reload managers
+        DatabaseManager.reload();
+        PronounsManager.reload();
+    }
+
+    private void disable() {
+        if (pronounPlaceholderAPIExpansion != null) {
+            pronounPlaceholderAPIExpansion.unregister();
         }
+    }
 
-        getServer().getPluginManager().registerEvents(new ChatHandler(), this);
+    public void reload(CommandSender commandSender) {
+        disable();
+        enable();
+
+        commandSender.sendMessage(Utils.formatMessage("Plugin reloaded succesfully!", true));
     }
 
     @Override
     public void onDisable() {
-        try {
-            database.closeConnection();
-        } catch (SQLException ex) {
-            Bukkit.getLogger().log(Level.WARNING, ex.getMessage());
-        }
-    }
+        disable();
 
-    public PronounMCDatabase getDatabase() {
-        return database;
+        instance = null;
     }
-
-    public AcceptanceStatusesConfig getAcceptanceStatusesConfig() {
-        return acceptanceStatusesConfig;
-    }
-
-    public SimpleConfig getSimpleConfig() {
-        return config;
-    }
-
-    public PronounsConfig getPronounsConfig() {
-        return pronounsConfig;
-    }
-
-    public TextsConfig getTextsConfig() {
-        return textsConfig;
-    }
-
 }

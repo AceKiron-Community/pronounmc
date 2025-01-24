@@ -1,25 +1,21 @@
-# Four pronouns (he/him, she/her, they/them, it/its) are configured by default in English (en).
-# For more pronouns, take a look at https://en.pronouns.page/pronouns.
-# Languages can be added or removed in the "locales" section in config.yml.
+defaultPronouns: they/them
 
-he_him:
-  en:
+pronouns:
+  he/him:
     subject: he
     object: him
     possessiveDeterminer: his
     possessivePronoun: his
     reflexive: himself
 
-she_her:
-  en:
+  she/her:
     subject: she
     object: her
     possessiveDeterminer: her
     possessivePronoun: hers
     reflexive: herself
 
-they_them:
-  en:
+  they/them:
     subject: they
     object: them
     possessiveDeterminer: their
@@ -27,8 +23,7 @@ they_them:
     reflexive: themselves
     note: Singular “they” has been used in English to describe an unspecified person since the late 1300s (it's even older than singular “you”!). Nowadays, it's the most popular choice among people who prefer gender neutral forms. It starts being accepted by dictionaries too. It is also common to use “themself” as a reflexive form.
 
-it_its:
-  en:
+  it/its:
     subject: it
     object: it
     possessiveDeterminer: its
