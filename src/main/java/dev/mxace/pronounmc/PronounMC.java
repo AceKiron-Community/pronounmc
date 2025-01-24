@@ -2,6 +2,7 @@ package dev.mxace.pronounmc;
 
 import dev.mxace.pronounmc.commands.executors.ClearpronounsCommandExecutor;
 import dev.mxace.pronounmc.commands.executors.PronounsnoteCommandExecutor;
+import dev.mxace.pronounmc.commands.executors.ReloadpronounmcCommandExecutor;
 import dev.mxace.pronounmc.commands.executors.SetpronounsCommandExecutor;
 import dev.mxace.pronounmc.commands.tabcompleters.PronounsnoteTabCompleter;
 import dev.mxace.pronounmc.commands.tabcompleters.SetpronounsTabCompleter;
@@ -51,9 +52,10 @@ public final class PronounMC extends JavaPlugin {
         getCommand("pronounsnote").setExecutor(new PronounsnoteCommandExecutor());
         getCommand("pronounsnote").setTabCompleter(new PronounsnoteTabCompleter());
 
+        getCommand("reloadpronounmc").setExecutor(new ReloadpronounmcCommandExecutor());
+
         getCommand("setpronouns").setExecutor(new SetpronounsCommandExecutor());
         getCommand("setpronouns").setTabCompleter(new SetpronounsTabCompleter());
-
 
         // Reload managers
         DatabaseManager.reload();

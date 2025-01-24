@@ -22,4 +22,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pmc-base
-          path: target/PronounMC-*.jar
+          path: target/pmc-base-*.jar
